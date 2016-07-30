@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "description": "Re-flow/re-wrap text in a variety of situations (comments, lists, etc.)",
   "keywords": [
-      "reflow", "rewrap", "wrap", "flow"
+      "reflow", "rewrap", "hard wrap", "hard-wrap", "wrap", "flow", "format",
+      "paragraph", "list", "comment"
   ],
   "activationCommands": {
     "atom-text-editor": "magic-reflow:reflow"
