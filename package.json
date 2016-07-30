@@ -1,0 +1,22 @@
+{
+  "name": "magic-reflow",
+  "main": "./lib/magic-reflow",
+  "version": "0.1.0",
+  "description": "Re-flow/re-wrap text in a variety of situations (comments, lists, etc.)",
+  "keywords": [
+      "reflow", "rewrap", "wrap", "flow"
+  ],
+  "activationCommands": {
+    "atom-text-editor": "magic-reflow:reflow"
+  },
+  "repository": "https://github.com/josh-berry/magic-reflow",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.8.0 <2.0.0"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "coffeelint": "^1.9.7"
+  }
+}

@@ -1,0 +1,19 @@
+"context-menu":
+    "atom-text-editor": [
+        {
+            "label": "Reflow Selection Magically"
+            "command": "magic-reflow:reflow"
+        }
+    ]
+
+"menu": [
+    {
+        "label": "Edit"
+        "submenu": [
+            {
+                "label": "Reflow Selection Magically"
+                "command": "magic-reflow:reflow"
+            }
+        ]
+    }
+]
