@@ -8,7 +8,9 @@ import MagicReflow from '../lib/magic-reflow';
 // `fit` or `fdescribe`).  Remove the `f` to unfocus the block.
 
 function test(test_args, expected) {
+    console.log([expected]);
     let actual = MagicReflow.reflow(...test_args);
+    console.log([actual]);
     expect(actual).toBe(expected);
 };
 
@@ -184,6 +186,79 @@ describe('MagicReflow', () => {
         it('detects leading sigils, multi-line, trailing .', () => test(
             ['.. this is a list.\nitem broken up', 24],
             '.. this is a list.  item\n   broken up'
+        ));
+    });
+
+    describe('when reflowing unordered lists', () => {
+        it('does not mistake paragraphs with dashes for lists', () => test(
+            [`
+This is a previously-wrapped paragraph
+- it has an unfortunate dash in it.  That - shouldn't be a list.
+`, 40], `
+This is a previously-wrapped paragraph -
+it has an unfortunate dash in it.  That
+- shouldn't be a list.
+`
+        ));
+
+        it('handles list items with blank lines between them', () => test(
+            [`
+- This is a short list item.
+
+- This is a longer list item, which I expect to wrap across two lines.
+`, 40], `
+- This is a short list item.
+
+- This is a longer list item, which I
+  expect to wrap across two lines.
+`
+        ));
+
+        it('handles list items without blank lines between them', () => test(
+            [`
+- This is a short list item.
+- This is a longer list item, which I expect to wrap across two lines.
+`, 40], `
+- This is a short list item.
+- This is a longer list item, which I
+  expect to wrap across two lines.
+`
+        ));
+
+        it('handles list items and paragraphs at the same time', () => test(
+            [`
+This is a short paragraph.
+
+- This is a short list item.
+- This is a longer list item, which I expect to wrap across two lines.
+
+This is a much longer paragraph, which should wrap (or so I hope).
+`, 40], `
+This is a short paragraph.
+
+- This is a short list item.
+- This is a longer list item, which I
+  expect to wrap across two lines.
+
+This is a much longer paragraph, which
+should wrap (or so I hope).
+`
+        ));
+
+        it('handles nested list items gracefully', () => test(
+            [`
+- This is a short list item.
+  - This is a nested list item.
+  - This is another nested list item, which should wrap.
+- This is a longer list item, which I expect to wrap across two lines.
+`, 40], `
+- This is a short list item.
+  - This is a nested list item.
+  - This is another nested list item,
+    which should wrap.
+- This is a longer list item, which I
+  expect to wrap across two lines.
+`
         ));
     });
 
