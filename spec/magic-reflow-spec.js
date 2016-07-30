@@ -262,6 +262,29 @@ should wrap (or so I hope).
         ));
     });
 
+    describe('when reflowing ordered lists', () => {
+        for (let sigil of ['1.', '(1)', 'a.', 'A.', '(a)', '(A)']) {
+            it(`handles small lists that look like ${sigil}`, () => test(
+                [`${sigil} foo\n${sigil} bar\n${sigil} baz`, 80],
+                `${sigil} foo\n${sigil} bar\n${sigil} baz`
+            ));
+            it('handles small nested lists that look like ${list}', () => test(
+                [`${sigil} foo\n   ${sigil} bar\n${sigil} baz`, 80],
+                `${sigil} foo\n   ${sigil} bar\n${sigil} baz`
+            ));
+        }
+
+        it('properly indents based on the length of the numeral', () => test(
+            ['1. Mary had a little lamb.\n10. Her fleece was white as snow.', 20],
+            '1. Mary had a little\n   lamb.\n10. Her fleece was\n    white as snow.'
+        ));
+
+        it('handles nested lists of different varieties', () => test(
+            ['1. outer\n   - inner\n2. other outer\n   + other inner', 80],
+            '1. outer\n   - inner\n2. other outer\n   + other inner'
+        ));
+    });
+
     // XXX Not sure why the scaffolding isn't working here. :/
     xdescribe('when invoked by the user', () => {
         let editor, editor_view;
