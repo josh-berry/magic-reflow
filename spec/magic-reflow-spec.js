@@ -168,7 +168,7 @@ describe('MagicReflow', () => {
     }
 
     describe('when reflowing paragraphs with only a leading sigil', () => {
-        for (let sigil of ['-', '+', '*', '<!--', '/*']) {
+        for (let sigil of ['-', '+', '*', '<!--', '/*', '1.', 'a.', '10.']) {
             let spaces = ' '.repeat(sigil.length);
             it(`recognizes single lines beginning with ${sigil}`, () => test(
                 [`${sigil} effervescently excuplatory exploratory`, 24],
