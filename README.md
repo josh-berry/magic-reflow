@@ -14,7 +14,7 @@ things that autoflow handles, and a lot more:
   item).  Recognizes numbered and lettered lists of the forms:
   - 1., a., A.
   - (2), (b), (B)
-- Wrap paragraphs with leading indentation
+- Wrap nested lists intelligently.
 - Wrap paragraphs with block indentation
 
 ...and various combinations of all of the above.
@@ -36,6 +36,7 @@ You can also use the "Reflow Selection Magically" context menu option, or the
 
 ## Future Work
 
+- Support for paragraphs with leading indentation
 - Support for tab characters (visual length is hard to compute, sorry :/)
 - Support for ASCII-art tables (a la org-mode)
 - Ignore code fences (a la Doxygen comments, markdown, etc.)

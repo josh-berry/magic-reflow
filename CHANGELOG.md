@@ -1,3 +1,14 @@
+## 0.2.0 - Fixes for various list issues
+
+Fixed:
+
+- Lots of corner cases related to lists, through an almost-complete rewrite.
+
+Dropped:
+
+- Support for paragraphs with leading indentation.  The new algorithm
+  unfortunately has lots of trouble with these, and they're not widely used.
+
 ## 0.1.0 - First Release
 
 Features:
