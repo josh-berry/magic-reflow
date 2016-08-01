@@ -9,7 +9,7 @@
     "rewrap",
     "hard wrap",
     "hard-wrap",
-    "format",
+    "format"
   ],
   "activationCommands": {
     "atom-text-editor": "magic-reflow:reflow"
