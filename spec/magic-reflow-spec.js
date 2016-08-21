@@ -23,6 +23,16 @@ function qcheck(what, args, expected) {
     });
 }
 
+function qcheckgen(gen, what, args, expected) {
+    it(`${what}: returns ${expected} for ${args}`, () => {
+        console.log(`BEGIN TEST ${what}:`, args);
+        let actual = Array.from(gen(...args));
+        console.log(`ACTUAL:  `, actual);
+        console.log(`EXPECTED:`, [expected]);
+        expect(actual[0]).toBe(expected);
+    });
+}
+
 describe('MagicReflow', () => {
     describe('vlen', () => {
         let vlen = MagicReflow.vlen;
@@ -76,28 +86,30 @@ describe('MagicReflow', () => {
     describe('indent_with_tabs', () => {
         let iwt = MagicReflow.indent_with_tabs;
 
-        describe('empty strings', () => {
-            qcheck(iwt, [0, 0, 4], '');
-            qcheck(iwt, [0, 1, 4], '');
-        });
+        qcheck(iwt, [0, 4], '');
+        qcheck(iwt, [1, 4], ' ');
+        qcheck(iwt, [4, 4], '\t');
+        qcheck(iwt, [5, 4], '\t ');
+        qcheck(iwt, [8, 4], '\t\t');
+        qcheck(iwt, [10, 4], '\t\t  ');
+    });
 
-        describe('first tab', () => {
-            qcheck(iwt, [4, 0, 4], '\t');
-            qcheck(iwt, [3, 1, 4], '\t');
-        });
+    describe('leading_tabs_to_spaces', () => {
+        let gen = MagicReflow.leading_tabs_to_spaces;
 
-        describe('multiple tabs', () => {
-            qcheck(iwt, [8, 0, 4], '\t\t');
-            qcheck(iwt, [6, 2, 4], '\t\t');
-        });
+        qcheckgen(gen, 'tab', [['\tfoo'], 4], '    foo');
+        qcheckgen(gen, 'tab+spc', [['\t  foo'], 4], '      foo');
+        qcheckgen(gen, 'spc+tab+spc', [[' \t  foo'], 4], '      foo');
+        qcheckgen(gen, 'spc+tab+spc+tab', [[' \t \tfoo'], 4], '        foo');
+    });
 
-        describe('trailing spaces', () => {
-            qcheck(iwt, [2, 0, 4], '  ');
-            qcheck(iwt, [2, 2, 4], '\t');
-            qcheck(iwt, [1, 2, 4], ' ');
-            qcheck(iwt, [5, 2, 4], '\t   ');
-            qcheck(iwt, [5, 6, 4], '\t   ');
-        });
+    describe('leading_spaces_to_tabs', () => {
+        let gen = MagicReflow.leading_spaces_to_tabs;
+
+        qcheckgen(gen, 'tab', [['    foo'], 4], '\tfoo');
+        qcheckgen(gen, 'tab+spc', [['      foo'], 4], '\t  foo');
+        qcheckgen(gen, 'spc+tab+spc', [['      foo'], 4], '\t  foo');
+        qcheckgen(gen, 'spc+tab+spc+tab', [['        foo'], 4], '\t\tfoo');
     });
 
     describe('when reflowing a single paragraph', () => {
@@ -194,6 +206,17 @@ describe('MagicReflow', () => {
             '    This is\n  the first\n  line.  This\n  is the\n  second line.'
         ));
 
+        it('converts spaces to tabs if appropriate', () => test(
+            ['    This is the first line.', 24, 4, false],
+            '\tThis is the first line.'
+        ));
+
+        it('handles inconsistent use of tabs and spaces', () => test(
+            ['\tLeading tab.\n        Second line.', 40, 8, true],
+            '        Leading tab.  Second line.'
+        ));
+
+
         it('fixes inconsistent indentation', () => test(
             [`
     This is the first line.
@@ -214,20 +237,30 @@ describe('MagicReflow', () => {
 
     describe('when dealing with leading tab characters', () => {
         it('preserves block style with tabs (one line)', () => test(
-            ['\tLeading tab.\n\tSecond line.', 40],
+            ['\tLeading tab.\n\tSecond line.', 40, 8, false],
             '\tLeading tab.  Second line.'
         ));
         it('preserves block style with tabs (multi-line)', () => test(
-            ['\tLeading tab that is a long line.\n\tSecond line.', 24, 8],
+            ['\tLeading tab that is a long line.\n\tSecond line.', 24, 8, false],
             '\tLeading tab that\n\tis a long line.\n\tSecond line.'
         ));
         it('uses the correct tab width for indentation', () => test(
-            ['\tLeading tab that is a long line.  Should be 24 cols.', 24, 4],
+            ['\tLeading tab that is a long line.  Should be 24 cols.', 24, 4, false],
             '\tLeading tab that is\n\ta long line.  Should\n\tbe 24 cols.',
         ));
         it('handles tabs after leading sigils', () => test(
             ['1.\tThis is a numbered list item that needs wrapping.', 24, 4, false],
             '1.\tThis is a numbered\n\tlist item that needs\n\twrapping.'
+        ));
+
+        it('converts tabs to spaces if appropriate', () => test(
+            ['\tLeading tab.\n\tSecond line.', 40, 8, true],
+            '        Leading tab.  Second line.'
+        ));
+
+        it('handles inconsistent use of tabs and spaces', () => test(
+            ['\tLeading tab.\n        Second line.', 40, 8, false],
+            '\tLeading tab.  Second line.'
         ));
 
         // BEGIN: Leading indents are not supported currently.
