@@ -1,3 +1,11 @@
+## 0.3.0 - Handle tab characters gracefully
+
+Added:
+
+- Detect and clean up inconsistent use of tab and space characters, according to
+  editor settings.
+- Reflow tab characters according to their proper visual width.
+
 ## 0.2.0 - Fixes for various list issues
 
 Fixed:
