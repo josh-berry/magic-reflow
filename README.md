@@ -37,6 +37,5 @@ You can also use the "Reflow Selection Magically" context menu option, or the
 ## Future Work
 
 - Support for paragraphs with leading indentation
-- Support for tab characters (visual length is hard to compute, sorry :/)
 - Support for ASCII-art tables (a la org-mode)
 - Ignore code fences (a la Doxygen comments, markdown, etc.)
