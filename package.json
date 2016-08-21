@@ -1,7 +1,7 @@
 {
   "name": "magic-reflow",
   "main": "./lib/magic-reflow",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Re-flow/re-wrap text in a variety of situations (comments, lists, etc.)",
   "keywords": [
     "wrap",
