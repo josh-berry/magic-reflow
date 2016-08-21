@@ -16,7 +16,62 @@ function test([input, line_vlen, tab_vlen], expected) {
     expect(actual).toBe(expected);
 };
 
+function test_vlen(args, expected) {
+    it(`returns ${expected} for ${args}`, () => {
+        let actual = MagicReflow.vlen(...args);
+        expect(actual).toBe(expected);
+    });
+}
+
 describe('MagicReflow', () => {
+    describe('vlen', () => {
+        describe('empty strings', () => {
+            test_vlen(['', 0, 8], 0);
+            test_vlen(['', 4, 8], 0);
+        });
+
+        describe('non-tab chars', () => {
+            test_vlen(['  ', 0, 4], 2);
+            test_vlen(['foo', 0, 4], 3);
+        });
+
+        describe('simple tabs', () => {
+            test_vlen(['\t', 0, 8], 8);
+            test_vlen(['\t', 4, 8], 4);
+            test_vlen(['\t', 8, 8], 8);
+
+            test_vlen(['\t', 0, 4], 4);
+            test_vlen(['\t', 4, 4], 4);
+        });
+
+        describe('short text followed by tab', () => {
+            test_vlen(['foo\t', 0, 8], 8);
+            test_vlen(['foo\t', 4, 8], 4);
+            test_vlen(['foo\t', 8, 8], 8);
+
+            test_vlen(['foo\t', 0, 4], 4);
+            test_vlen(['foo\t', 4, 4], 4);
+        });
+
+        describe('tab in middle', () => {
+            test_vlen(['foo\tbar', 0, 8], 8+3);
+            test_vlen(['foo\tbar', 4, 8], 4+3);
+            test_vlen(['foo\tbar', 8, 8], 8+3);
+
+            test_vlen(['foo\tbar', 0, 4], 4+3);
+            test_vlen(['foo\tbar', 4, 4], 4+3);
+        });
+
+        describe('multiple tabs', () => {
+            test_vlen(['foo\t\t', 0, 8], 8+8);
+            test_vlen(['foo\t\t', 4, 8], 4+8);
+            test_vlen(['foo\t\t', 8, 8], 8+8);
+
+            test_vlen(['foo\t\t', 0, 4], 4+4);
+            test_vlen(['foo\t\t', 4, 4], 4+4);
+        });
+    });
+
     describe('when reflowing a single paragraph', () => {
         it('leaves short lines alone', () => test(
             ['This is a short line.'],
