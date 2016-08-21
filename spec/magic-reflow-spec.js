@@ -7,10 +7,10 @@ import MagicReflow from '../lib/magic-reflow';
 // To run a specific `it` or `describe` block add an `f` to the front (e.g.
 // `fit` or `fdescribe`).  Remove the `f` to unfocus the block.
 
-function test([input, line_len, tab_vlen], expected) {
+function test([input, line_vlen, tab_vlen], expected) {
     console.log(`BEGIN TEST:\n${input}`);
     let actual = MagicReflow.reflow(
-        input, {line_len: line_len, tab_vlen: tab_vlen});
+        input, {line_vlen: line_vlen, tab_vlen: tab_vlen});
     console.log(`TEST EXPECTED:\n${expected}`);
     console.log(`TEST ACTUAL:\n${[actual]}`);
     expect(actual).toBe(expected);
