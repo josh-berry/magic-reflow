@@ -7,68 +7,96 @@ import MagicReflow from '../lib/magic-reflow';
 // To run a specific `it` or `describe` block add an `f` to the front (e.g.
 // `fit` or `fdescribe`).  Remove the `f` to unfocus the block.
 
-function test([input, line_vlen, tab_vlen], expected) {
+function test([input, line_vlen, tab_vlen, soft_tab], expected) {
     console.log(`BEGIN TEST:\n${input}`);
     let actual = MagicReflow.reflow(
-        input, {line_vlen: line_vlen, tab_vlen: tab_vlen});
+        input, {line_vlen: line_vlen, tab_vlen: tab_vlen, soft_tab: soft_tab});
     console.log(`TEST EXPECTED:\n${expected}`);
     console.log(`TEST ACTUAL:\n${[actual]}`);
     expect(actual).toBe(expected);
 };
 
-function test_vlen(args, expected) {
+function qcheck(what, args, expected) {
     it(`returns ${expected} for ${args}`, () => {
-        let actual = MagicReflow.vlen(...args);
+        let actual = what(...args);
         expect(actual).toBe(expected);
     });
 }
 
 describe('MagicReflow', () => {
     describe('vlen', () => {
+        let vlen = MagicReflow.vlen;
         describe('empty strings', () => {
-            test_vlen(['', 0, 8], 0);
-            test_vlen(['', 4, 8], 0);
+            qcheck(vlen, ['', 0, 8], 0);
+            qcheck(vlen, ['', 4, 8], 0);
         });
 
         describe('non-tab chars', () => {
-            test_vlen(['  ', 0, 4], 2);
-            test_vlen(['foo', 0, 4], 3);
+            qcheck(vlen, ['  ', 0, 4], 2);
+            qcheck(vlen, ['foo', 0, 4], 3);
         });
 
         describe('simple tabs', () => {
-            test_vlen(['\t', 0, 8], 8);
-            test_vlen(['\t', 4, 8], 4);
-            test_vlen(['\t', 8, 8], 8);
+            qcheck(vlen, ['\t', 0, 8], 8);
+            qcheck(vlen, ['\t', 4, 8], 4);
+            qcheck(vlen, ['\t', 8, 8], 8);
 
-            test_vlen(['\t', 0, 4], 4);
-            test_vlen(['\t', 4, 4], 4);
+            qcheck(vlen, ['\t', 0, 4], 4);
+            qcheck(vlen, ['\t', 4, 4], 4);
         });
 
         describe('short text followed by tab', () => {
-            test_vlen(['foo\t', 0, 8], 8);
-            test_vlen(['foo\t', 4, 8], 4);
-            test_vlen(['foo\t', 8, 8], 8);
+            qcheck(vlen, ['foo\t', 0, 8], 8);
+            qcheck(vlen, ['foo\t', 4, 8], 4);
+            qcheck(vlen, ['foo\t', 8, 8], 8);
 
-            test_vlen(['foo\t', 0, 4], 4);
-            test_vlen(['foo\t', 4, 4], 4);
+            qcheck(vlen, ['foo\t', 0, 4], 4);
+            qcheck(vlen, ['foo\t', 4, 4], 4);
         });
 
         describe('tab in middle', () => {
-            test_vlen(['foo\tbar', 0, 8], 8+3);
-            test_vlen(['foo\tbar', 4, 8], 4+3);
-            test_vlen(['foo\tbar', 8, 8], 8+3);
+            qcheck(vlen, ['foo\tbar', 0, 8], 8+3);
+            qcheck(vlen, ['foo\tbar', 4, 8], 4+3);
+            qcheck(vlen, ['foo\tbar', 8, 8], 8+3);
 
-            test_vlen(['foo\tbar', 0, 4], 4+3);
-            test_vlen(['foo\tbar', 4, 4], 4+3);
+            qcheck(vlen, ['foo\tbar', 0, 4], 4+3);
+            qcheck(vlen, ['foo\tbar', 4, 4], 4+3);
         });
 
         describe('multiple tabs', () => {
-            test_vlen(['foo\t\t', 0, 8], 8+8);
-            test_vlen(['foo\t\t', 4, 8], 4+8);
-            test_vlen(['foo\t\t', 8, 8], 8+8);
+            qcheck(vlen, ['foo\t\t', 0, 8], 8+8);
+            qcheck(vlen, ['foo\t\t', 4, 8], 4+8);
+            qcheck(vlen, ['foo\t\t', 8, 8], 8+8);
 
-            test_vlen(['foo\t\t', 0, 4], 4+4);
-            test_vlen(['foo\t\t', 4, 4], 4+4);
+            qcheck(vlen, ['foo\t\t', 0, 4], 4+4);
+            qcheck(vlen, ['foo\t\t', 4, 4], 4+4);
+        });
+    });
+
+    describe('indent_with_tabs', () => {
+        let iwt = MagicReflow.indent_with_tabs;
+
+        describe('empty strings', () => {
+            qcheck(iwt, [0, 0, 4], '');
+            qcheck(iwt, [0, 1, 4], '');
+        });
+
+        describe('first tab', () => {
+            qcheck(iwt, [4, 0, 4], '\t');
+            qcheck(iwt, [3, 1, 4], '\t');
+        });
+
+        describe('multiple tabs', () => {
+            qcheck(iwt, [8, 0, 4], '\t\t');
+            qcheck(iwt, [6, 2, 4], '\t\t');
+        });
+
+        describe('trailing spaces', () => {
+            qcheck(iwt, [2, 0, 4], '  ');
+            qcheck(iwt, [2, 2, 4], '\t');
+            qcheck(iwt, [1, 2, 4], ' ');
+            qcheck(iwt, [5, 2, 4], '\t   ');
+            qcheck(iwt, [5, 6, 4], '\t   ');
         });
     });
 
@@ -184,24 +212,34 @@ describe('MagicReflow', () => {
         ));
     });
 
-    // XXX Need to implement visual-width calculations to handle tabs... :/
-    xdescribe('when dealing with leading tab characters', () => {
-        it('preserves leading indents with tabs (one line)', () => test(
-            ['\tLeading tab.\nSecond line.', 40],
-            '\tLeading tab.  Second line.'
-        ));
+    describe('when dealing with leading tab characters', () => {
         it('preserves block style with tabs (one line)', () => test(
             ['\tLeading tab.\n\tSecond line.', 40],
-            '\tLeading tab.  Second line.'
-        ));
-        it('preserves leading indents with tabs (multi-line)', () => test(
-            ['\tLeading tab.\nSecond line.', 40],
             '\tLeading tab.  Second line.'
         ));
         it('preserves block style with tabs (multi-line)', () => test(
             ['\tLeading tab that is a long line.\n\tSecond line.', 24, 8],
             '\tLeading tab that\n\tis a long line.\n\tSecond line.'
         ));
+        it('uses the correct tab width for indentation', () => test(
+            ['\tLeading tab that is a long line.  Should be 24 cols.', 24, 4],
+            '\tLeading tab that is\n\ta long line.  Should\n\tbe 24 cols.',
+        ));
+        it('handles tabs after leading sigils', () => test(
+            ['1.\tThis is a numbered list item that needs wrapping.', 24, 4, false],
+            '1.\tThis is a numbered\n\tlist item that needs\n\twrapping.'
+        ));
+
+        // BEGIN: Leading indents are not supported currently.
+        xit('preserves leading indents with tabs (one line)', () => test(
+            ['\tLeading tab.\nSecond line.', 40],
+            '\tLeading tab.  Second line.'
+        ));
+        xit('preserves leading indents with tabs (multi-line)', () => test(
+            ['\tLeading tab.\nSecond line.', 40],
+            '\tLeading tab.  Second line.'
+        ));
+        // END: leading indents
     });
 
     for (let sigil of ['#', '##', '//', '///', '--', ';', ';;', ';;;']) {
